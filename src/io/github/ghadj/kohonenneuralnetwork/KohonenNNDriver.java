@@ -60,7 +60,7 @@ public class KohonenNNDriver {
             parameters[i++] = st.split(" ")[1];
         br.close();
 
-        if (i != 9)
+        if (i != 7)
             throw new InvalidParameterException("Invalid parameters given.");
         return parameters;
     }
@@ -118,10 +118,7 @@ public class KohonenNNDriver {
             Map<Character, List<Double>> testData) throws IOException {
 
         KohonenNN nn = new KohonenNN(Integer.parseInt(parameters[0]), Double.parseDouble(parameters[1]), Integer.parseInt(parameters[2]),  Integer.parseInt(parameters[3]), Double.parseDouble(parameters[4]));
-        //for (int i = 0; i < Integer.parseInt(parameters[6]); i++) {
-        //    nn.run(trainingData, true);
-        //   nn.run(testData, false);
-        //}
+        nn.run(trainingData, testData);
         List<Double> trainError = nn.getTrainErrorList();
         List<Double> testError = nn.getTestErrorList();
         writeResults(trainError, testError, errorFilename);

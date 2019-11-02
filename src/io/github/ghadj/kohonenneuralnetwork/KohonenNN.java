@@ -50,7 +50,6 @@ public class KohonenNN {
         int minX = 0, minY = 0;
         double dmin = Double.MAX_VALUE, d;
         for (Map.Entry<Character, List<Double>> l : data.entrySet()) {
-
             for (int i = 0; i < this.gridSize; i++)
                 for (int j = 0; j < this.gridSize; j++) {
                     d = 0;
@@ -96,7 +95,8 @@ public class KohonenNN {
     }
 
     private double getCurrentStandardDeviation(int t) {
-        return this.standardDeviation * Math.exp((-1) * ((double) t) / (T / Math.log(this.standardDeviation)));
+        return this.standardDeviation
+                * Math.exp((-1) * ((double) t) / (((double) T) / Math.log(this.standardDeviation)));
     }
 
     private double euclideanDist(int x, int y) {
@@ -129,7 +129,6 @@ public class KohonenNN {
         double dmin = Double.MAX_VALUE, d;
 
         for (Map.Entry<Character, List<Double>> l : data.entrySet()) {
-
             for (int i = 0; i < this.gridSize; i++)
                 for (int j = 0; j < this.gridSize; j++) {
                     d = 0;
@@ -146,7 +145,7 @@ public class KohonenNN {
             sign = (labels[minX][minY] == l.getKey()) ? 1 : -1;
             for (int k = 0; k < this.dataDimension; k++)
                 weights[minX][minY][k] = weights[minX][minY][k]
-                        + (sign) * (l.getValue().get(k) - weights[minX][minY][k]);
+                        + (sign) * this.getCurrentLearningRate(this.T) * (l.getValue().get(k) - weights[minX][minY][k]);
         }
 
     }
