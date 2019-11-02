@@ -3,5 +3,5 @@ learningRate 0.4
 maxIterations 1000
 dataDimension 16
 standardDeviation 20
-trainFile ./Parameters/training.txt
-testFile ./Parameters/test.txt
+trainFile ./Parameters/training02.csv
+testFile ./Parameters/test02.csv

@@ -33,7 +33,7 @@ public class KohonenNN {
      * @param maxIterations     number of epoches to be executed.
      * @param dataDimension     dimension of the input data, number of features per
      *                          input.
-     * @param standardDeviation
+     * @param standardDeviation standard deviation of the Gaussian function.
      */
     public KohonenNN(int gridSize, double learningRate, int maxIterations, int dataDimension,
             double standardDeviation) {
@@ -52,6 +52,14 @@ public class KohonenNN {
         this.T = maxIterations;
     }
 
+    /**
+     * Runs the neural network, each iteration one epoch with training and another
+     * with test data. At the end, labels neurons (using test data), applies LVQ
+     * (using training data) and then labels again.
+     * 
+     * @param train data.
+     * @param test  data.
+     */
     public void run(Map<Character, List<Double>> train, Map<Character, List<Double>> test) {
         for (int t = 0; t < this.T; t++) {
             System.out.println("Running Epoch: #" + t);
@@ -63,6 +71,14 @@ public class KohonenNN {
         labeling(test);
     }
 
+    /**
+     * Runs an epoch, through all the data given. If train then updates weights
+     * after each pattern. Calculates training/testing error for this epoch.
+     * 
+     * @param t     current epoch.
+     * @param data.
+     * @param train true if training, otherwise false.
+     */
     private void epoch(int t, Map<Character, List<Double>> data, Boolean train) {
         double sumError = 0.0;
         int minX = 0, minY = 0;
@@ -91,37 +107,80 @@ public class KohonenNN {
                         for (int k = 0; k < this.dataDimension; k++)
                             updateWeight(i, j, k, t, l.getValue().get(k));
             }
-
             sumError += dmin;
         }
+
         if (train)
             this.trainErrorList.add(sumError / data.size());
         else
             this.testErrorList.add(sumError / data.size());
     }
 
+    /**
+     * Updates weight of the given neuron, specified by coordinates x and y.
+     * 
+     * @param x  coordinate of neuron.
+     * @param y  coordinate of neuron.
+     * @param z  weight to input feature.
+     * @param t  current epoch.
+     * @param in input feature.
+     */
     private void updateWeight(int x, int y, int z, int t, double in) {
         weights[x][y][z] = weights[x][y][z]
                 + getCurrentLearningRate(t) * neighbourhoodFunction(x, y, t) * (in - weights[x][y][z]);
     }
 
+    /**
+     * Returns value of neighbourhood function.
+     * 
+     * @param x coordinate of neuron.
+     * @param y coordinate of neuron.
+     * @param t current epoch.
+     * @return value of neighbourhood function.
+     */
     private double neighbourhoodFunction(int x, int y, int t) {
         return Math.exp((-1) * euclideanDist(x, y) / (2 * Math.pow(this.getCurrentStandardDeviation(t), 2)));
     }
 
+    /**
+     * Returns current learning rate (decreases over the iterations).
+     * 
+     * @param t current epoch.
+     * @return current learning rate.
+     */
     private double getCurrentLearningRate(int t) {
         return this.learningRate * Math.exp((-1) * ((double) t) / T);
     }
 
+    /**
+     * Returns current standard deviation of the Gaussian function (decreases over
+     * the iterations).
+     * 
+     * @param t current epoch.
+     * @return current standard deviation.
+     */
     private double getCurrentStandardDeviation(int t) {
         return this.standardDeviation
                 * Math.exp((-1) * ((double) t) / (((double) T) / Math.log10(this.standardDeviation)));
     }
 
+    /**
+     * Returns the euclidan distance between the neuron given, represented by the
+     * coordinates x and y, and the winner neuron.
+     * 
+     * @param x coordinate of neuron.
+     * @param y coordinate of neuron.
+     * @return euclidan distance between the neuron given and the winner neuron.
+     */
     private double euclideanDist(int x, int y) {
         return Math.pow(winnerX - x, 2) + Math.pow(winnerY - y, 2);
     }
 
+    /**
+     * Labels neurons based on the input with the shortest distance.
+     * 
+     * @param data testing data.
+     */
     public void labeling(Map<Character, List<Double>> data) {
         double dmin, d;
         char cmin;
@@ -143,6 +202,11 @@ public class KohonenNN {
             }
     }
 
+    /**
+     * Applies Learning Vector Quantification.
+     * 
+     * @param data training data.
+     */
     public void lvq(Map<Character, List<Double>> data) {
         int minX = 0, minY = 0, sign;
         double dmin, d;
