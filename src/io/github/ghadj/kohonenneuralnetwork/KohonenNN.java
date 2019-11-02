@@ -5,19 +5,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+/**
+ * Implementation of Kohonen Neural Network.
+ * 
+ * @author Georgios Hadjiantonis
+ * @since 02-11-2019
+ */
 public class KohonenNN {
-    private double[][][] weights;
-    private char[][] labels;
-    private int winnerX = 0;
-    private int winnerY = 0;
+    private double[][][] weights; // weight from each neuron to each input feature
+    private char[][] labels; // char corresponding to each neuron
+    private int winnerX = 0; // x coordinate of winner neuron
+    private int winnerY = 0; // y coordinate of winner neuron
     private double learningRate;
     private ArrayList<Double> trainErrorList = new ArrayList<Double>();
     private ArrayList<Double> testErrorList = new ArrayList<Double>();
     private double standardDeviation;
-    private int T;
-    private int gridSize;
-    private int dataDimension;
+    private int T; // number of total iterations
+    private int gridSize; // size of grid
+    private int dataDimension; // number of features per input
 
+    /**
+     * Constructor of Neural Network. Initializes weights to random double [-1, 1],
+     * and sets attributes to the given values.
+     * 
+     * @param gridSize          size of the grid.
+     * @param learningRate      learning rate.
+     * @param maxIterations     number of epoches to be executed.
+     * @param dataDimension     dimension of the input data, number of features per
+     *                          input.
+     * @param standardDeviation
+     */
     public KohonenNN(int gridSize, double learningRate, int maxIterations, int dataDimension,
             double standardDeviation) {
         this.weights = new double[gridSize][gridSize][dataDimension];
@@ -27,7 +44,7 @@ public class KohonenNN {
         for (int i = 0; i < gridSize; i++)
             for (int j = 0; j < gridSize; j++)
                 for (int k = 0; k < dataDimension; k++)
-                    this.weights[i][j][k] = (new Random()).nextDouble() - 0.5;
+                    this.weights[i][j][k] = (new Random()).nextDouble() * 2 - 1; // [-1, 1]
 
         this.labels = new char[gridSize][gridSize];
         this.learningRate = learningRate;
@@ -37,6 +54,7 @@ public class KohonenNN {
 
     public void run(Map<Character, List<Double>> train, Map<Character, List<Double>> test) {
         for (int t = 0; t < this.T; t++) {
+            System.out.println("Running Epoch: #" + t);
             epoch(t, train, true);
             epoch(t, test, false);
         }
@@ -48,8 +66,9 @@ public class KohonenNN {
     private void epoch(int t, Map<Character, List<Double>> data, Boolean train) {
         double sumError = 0.0;
         int minX = 0, minY = 0;
-        double dmin = Double.MAX_VALUE, d;
+        double dmin, d;
         for (Map.Entry<Character, List<Double>> l : data.entrySet()) {
+            dmin = Double.MAX_VALUE;
             for (int i = 0; i < this.gridSize; i++)
                 for (int j = 0; j < this.gridSize; j++) {
                     d = 0;
@@ -96,7 +115,7 @@ public class KohonenNN {
 
     private double getCurrentStandardDeviation(int t) {
         return this.standardDeviation
-                * Math.exp((-1) * ((double) t) / (((double) T) / Math.log(this.standardDeviation)));
+                * Math.exp((-1) * ((double) t) / (((double) T) / Math.log10(this.standardDeviation)));
     }
 
     private double euclideanDist(int x, int y) {
@@ -126,9 +145,10 @@ public class KohonenNN {
 
     public void lvq(Map<Character, List<Double>> data) {
         int minX = 0, minY = 0, sign;
-        double dmin = Double.MAX_VALUE, d;
+        double dmin, d;
 
         for (Map.Entry<Character, List<Double>> l : data.entrySet()) {
+            dmin = Double.MAX_VALUE;
             for (int i = 0; i < this.gridSize; i++)
                 for (int j = 0; j < this.gridSize; j++) {
                     d = 0;
@@ -170,6 +190,11 @@ public class KohonenNN {
         return testErrorList;
     }
 
+    /**
+     * Returns array of characters containing the label-character per neuron.
+     * 
+     * @return array of characters containing the label-character per neuron.
+     */
     public char[][] getLabels() {
         return labels;
     }
