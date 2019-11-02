@@ -11,7 +11,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,16 +21,12 @@ import java.util.Map;
  * network based on the given parameters and exports the error and success rate
  * per epoch in two separate files.
  * 
- * Assume that the parameter file has the following format: 
- * gridSize 80
- * learningRate 0.3 
- * maxIterations 10000 
- * dataDimension 16
- * trainFile ../Parameters/training.csv
- * testFile ../Parameters/test.csv
+ * Assume that the parameter file has the following format: gridSize 80
+ * learningRate 0.3 maxIterations 10000 dataDimension 16 trainFile
+ * ../Parameters/training.csv testFile ../Parameters/test.csv
  * 
- *  Compile from Simple-Neural-Network/ directory
- * javac -d ./bin ./src/io/github/ghadj/simpleneuralnetwork/*.java
+ * Compile from Simple-Neural-Network/ directory javac -d ./bin
+ * ./src/io/github/ghadj/simpleneuralnetwork/*.java
  * 
  * Run from Simple-Neural-Network/ directory java -cp ./bin
  * io.github.ghadj.simpleneuralnetwork.SimpleNeuralNetworkDriver <path to
@@ -40,7 +35,7 @@ import java.util.Map;
  * @author Georgios Hadjiantonis
  * @since 01-11-2019
  */
-public class  KohonenNNDriver{
+public class KohonenNNDriver {
     private static final String errorFilename = "errors.txt";
 
     /**
@@ -56,7 +51,7 @@ public class  KohonenNNDriver{
             throws FileNotFoundException, IOException, InvalidParameterException {
         File file = new File(filename);
         BufferedReader br;
-        String[] parameters = new String[9];
+        String[] parameters = new String[7];
         int i = 0;
 
         br = new BufferedReader(new FileReader(file));
@@ -83,7 +78,7 @@ public class  KohonenNNDriver{
      * @throws InvalidParameterException in case the data of the given file is
      *                                   inconsistent.
      */
-    public static Map<Character, List<Double>> readData(int numInputNeurons, int numOutputNeurons, String filename)
+    public static Map<Character, List<Double>> readData(int dataDimension, String filename)
             throws FileNotFoundException, IOException, InvalidParameterException {
         Map<Character, List<Double>> data = new HashMap<Character, List<Double>>();
         File file = new File(filename);
@@ -91,21 +86,19 @@ public class  KohonenNNDriver{
         br = new BufferedReader(new FileReader(file));
         String st;
         while ((st = br.readLine()) != null) {
-            List<Double> input = new ArrayList<>();
-            List<Double> output = new ArrayList<>();
+            List<Double> features = new ArrayList<>();
             int i = 0;
             String[] line = st.split(",");
-            if (line.length != numInputNeurons + numOutputNeurons) {
+            if (line.length != 1 + dataDimension) {
                 br.close();
                 throw new InvalidParameterException("Inconsistent data given in file " + filename);
             }
 
-            for (int j = 0; j < numInputNeurons; j++)
-                input.add(Double.parseDouble(line[i++]));
-            for (int j = 0; j < numOutputNeurons; j++)
-                output.add(Double.parseDouble(line[i++]));
+            char label = line[i++].charAt(0);
+            for (int j = 0; j < dataDimension; j++)
+                features.add(Double.parseDouble(line[i++]));
 
-            data.put(input, output);
+            data.put(label, features);
         }
         br.close();
         return data;
@@ -124,11 +117,11 @@ public class  KohonenNNDriver{
     public static void run(String[] parameters, Map<Character, List<Double>> trainingData,
             Map<Character, List<Double>> testData) throws IOException {
 
-        KohonenNN nn = new KohonenNN(Integer.parseInt(parameters[0]), Double.parseDouble(parameters[1]),Integer.parseInt(parameters[0]));
-        for (int i = 0; i < Integer.parseInt(parameters[6]); i++) {
-            nn.run(trainingData, true);
-            nn.run(testData, false);
-        }
+        KohonenNN nn = new KohonenNN(Integer.parseInt(parameters[0]), Double.parseDouble(parameters[1]), Integer.parseInt(parameters[2]),  Integer.parseInt(parameters[3]), Double.parseDouble(parameters[4]));
+        //for (int i = 0; i < Integer.parseInt(parameters[6]); i++) {
+        //    nn.run(trainingData, true);
+        //   nn.run(testData, false);
+        //}
         List<Double> trainError = nn.getTrainErrorList();
         List<Double> testError = nn.getTestErrorList();
         writeResults(trainError, testError, errorFilename);
@@ -157,12 +150,12 @@ public class  KohonenNNDriver{
             System.out.println("Error: Enter the path to the parameters.txt as an argument to the program.");
             return;
         }
-        Map<List<Double>, List<Double>> trainingData, testData;
+        Map<Character, List<Double>> trainingData, testData;
         String[] parameters;
         try {
             parameters = readParameters(args[0]);
-            trainingData = readData(Integer.parseInt(parameters[2]), Integer.parseInt(parameters[3]), parameters[7]);
-            testData = readData(Integer.parseInt(parameters[2]), Integer.parseInt(parameters[3]), parameters[8]);
+            trainingData = readData(Integer.parseInt(parameters[3]), parameters[5]);
+            testData = readData(Integer.parseInt(parameters[3]), parameters[6]);
 
             run(parameters, trainingData, testData);
         } catch (InvalidParameterException e) {

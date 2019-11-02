@@ -2,5 +2,6 @@ gridSize 80
 learningRate 0.3
 maxIterations 10000
 dataDimension 16
+standardDeviation 0.8
 trainFile ../Parameters/training.csv
 testFile ../Parameters/test.csv
