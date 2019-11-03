@@ -1,2 +1,2 @@
 # Kohonen Neural Network
-Implementation of Kohonen neural network in java.
+Implementation of Kohonen SOM (Self-organizing map) neural network in java.
